@@ -2,44 +2,19 @@ workflows:
   default-workflow:
     name: Build and Test
     environment:
-      flutter: 3.7.0
-      xcode: latest
+      flutter: 3.7.0  # 或者指定一个特定版本，例如 '3.10.0'
+      xcode: latest    # 用于 iOS 构建
     scripts:
       - name: Clean the project
         script: flutter clean
-
-      - name: Clean Gradle cache
-        script: |
-          cd android
-          ./gradlew clean
-
-      - name: Clear Flutter SDK cache
-        script: flutter precache --force
-
       - name: Get dependencies
         script: flutter pub get
-
-      - name: Print Flutter SDK path
-        script: |
-          echo "FLUTTER_ROOT: $FLUTTER_ROOT"
-          cat android/local.properties | grep flutter.sdk
-
-      - name: Ensure Flutter SDK version
-        script: flutter --version
-
-      - name: Build Android App Bundle (AAB)
-        script: flutter build appbundle --release --verbose
-
-      - name: Build Android APK (Release)
+      - name: Ensure latest Flutter SDK
+        script: flutter upgrade --force
+      - name: Build APK
         script: flutter build apk --release --verbose
 
-      - name: Check Android Output Files
-        script: |
-          echo "Generated files:"
-          ls build/app/outputs/bundle/release/
-          ls build/app/outputs/flutter-apk/
-
-      - name: Build iOS App (Release)
+      - name: Build iOS App
         script: flutter build ios --release --no-codesign --verbose
 
       - name: Archive iOS App
@@ -58,10 +33,5 @@ workflows:
             -exportPath $CM_BUILD_DIR \
             -exportOptionsPlist ios/exportOptions.plist
 
-      - name: Check iOS IPA Output
-        script: ls $CM_BUILD_DIR/
-
     artifacts:
       - $CM_BUILD_DIR/*.ipa
-      - build/app/outputs/bundle/release/*.aab
-      - build/app/outputs/flutter-apk/app-release.apk
