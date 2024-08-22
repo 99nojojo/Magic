@@ -1,0 +1,53 @@
+workflows:
+  default-workflow:
+    name: Build and Test
+    environment:
+      flutter: 3.7.0
+      xcode: latest
+    scripts:
+      - name: Clean the project
+        script: flutter clean
+
+      - name: Clean Gradle cache
+        script: |
+          cd android
+          ./gradlew clean
+
+      - name: Clear Flutter SDK cache
+        script: flutter precache --force
+
+      - name: Get dependencies
+        script: flutter pub get
+
+      - name: Print Flutter SDK path
+        script: |
+          echo "FLUTTER_ROOT: $FLUTTER_ROOT"
+          cat android/local.properties | grep flutter.sdk
+
+      - name: Ensure Flutter SDK version
+        script: flutter --version
+
+      - name: Build APK
+        script: flutter build apk --release --verbose --warning-mode all
+
+      - name: Build iOS App
+        script: flutter build ios --release --no-codesign --verbose
+
+      - name: Archive iOS App
+        script: |
+          xcodebuild -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath $CM_BUILD_DIR/Runner.xcarchive \
+            archive
+
+      - name: Export IPA
+        script: |
+          xcodebuild -exportArchive \
+            -archivePath $CM_BUILD_DIR/Runner.xcarchive \
+            -exportPath $CM_BUILD_DIR \
+            -exportOptionsPlist ios/exportOptions.plist
+
+    artifacts:
+      - $CM_BUILD_DIR/*.ipa
