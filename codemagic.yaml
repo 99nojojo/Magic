@@ -27,10 +27,13 @@ workflows:
       - name: Ensure Flutter SDK version
         script: flutter --version
 
-      - name: Build APK
+      - name: Build Android APK (Release)
         script: flutter build apk --release --verbose --warning-mode all
 
-      - name: Build iOS App
+      - name: Check Android APK Output
+        script: ls build/app/outputs/flutter-apk/
+
+      - name: Build iOS App (Release)
         script: flutter build ios --release --no-codesign --verbose
 
       - name: Archive iOS App
@@ -49,5 +52,9 @@ workflows:
             -exportPath $CM_BUILD_DIR \
             -exportOptionsPlist ios/exportOptions.plist
 
+      - name: Check iOS IPA Output
+        script: ls $CM_BUILD_DIR/
+
     artifacts:
       - $CM_BUILD_DIR/*.ipa
+      - build/app/outputs/flutter-apk/app-release.apk
