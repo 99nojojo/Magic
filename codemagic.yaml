@@ -27,11 +27,17 @@ workflows:
       - name: Ensure Flutter SDK version
         script: flutter --version
 
-      - name: Build Android APK (Release)
-        script: flutter build apk --release --verbose --warning-mode all
+      - name: Build Android App Bundle (AAB)
+        script: flutter build appbundle --release --verbose
 
-      - name: Check Android APK Output
-        script: ls build/app/outputs/flutter-apk/
+      - name: Build Android APK (Release)
+        script: flutter build apk --release --verbose
+
+      - name: Check Android Output Files
+        script: |
+          echo "Generated files:"
+          ls build/app/outputs/bundle/release/
+          ls build/app/outputs/flutter-apk/
 
       - name: Build iOS App (Release)
         script: flutter build ios --release --no-codesign --verbose
@@ -57,4 +63,5 @@ workflows:
 
     artifacts:
       - $CM_BUILD_DIR/*.ipa
+      - build/app/outputs/bundle/release/*.aab
       - build/app/outputs/flutter-apk/app-release.apk
