@@ -31,8 +31,8 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Ensure latest Flutter SDK
-        run: flutter upgrade --force
+      #- name: Ensure latest Flutter SDK
+      #  run: flutter upgrade --force
 
       - name: Build APK
         run: flutter build apk --release --verbose

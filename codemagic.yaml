@@ -9,7 +9,6 @@ workflows:
         script: flutter clean
       - name: Get dependencies
         script: flutter pub get
-# 这里强制更新最新的flutter版本会导致编译失败
 #      - name: Ensure latest Flutter SDK
 #        script: flutter upgrade --force
       - name: Build APK
