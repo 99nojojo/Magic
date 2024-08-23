@@ -39,9 +39,9 @@ jobs:
 
       #- name: Ensure latest Flutter SDK  # 如果不需要强制升级，可以保留注释
       #  run: flutter upgrade --force
-
+      # --release --verbose 
       - name: Build APK
-        run: flutter build apk --release --verbose
+        run: flutter build apk --stacktrace --debug
 
       - name: Build iOS App
         run: flutter build ios --release --no-codesign --verbose
