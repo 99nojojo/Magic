@@ -13,17 +13,15 @@ jobs:
   build:
     runs-on: macos-latest  # 使用 macOS 构建 iOS 和 Android 应用
 
-    
-
     env:
       FLUTTER_VERSION: '3.7.0'
 
     steps:
-      - name: Set up environment proxy  # 如果需要设置代理，请取消注释并填入你的代理信息
-        run: |
-          echo "http_proxy=http://127.0.0.1:7890" >> $GITHUB_ENV
-        #  echo "https_proxy=http://your.proxy.host:your.proxy.port" >> $GITHUB_ENV
-        # 如果不需要代理，可删除或注释上面这段代码
+      # - name: Set up environment proxy  # 如果需要设置代理，请取消注释并填入你的代理信息
+      #   run: |
+      #     echo "http_proxy=http://127.0.0.1:7890" >> $GITHUB_ENV
+      #     echo "https_proxy=http://your.proxy.host:your.proxy.port" >> $GITHUB_ENV
+      # 如果不需要代理，可删除或注释上面这段代码
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -45,8 +43,17 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      #- name: Ensure latest Flutter SDK  # 如果不需要强制升级，可以保留注释
-      #  run: flutter upgrade --force
+      # 确保依赖下载和构建缓存的使用，以加速构建
+      - name: Cache Flutter build
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            build
+          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
       - name: Build APK
         run: flutter build apk --release --verbose
 
