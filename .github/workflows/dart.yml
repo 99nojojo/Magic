@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:  # 添加手动触发选项
+  workflow_dispatch:  # 保留手动触发选项
 
 jobs:
   build:
@@ -17,6 +17,12 @@ jobs:
       FLUTTER_VERSION: '3.7.0'
 
     steps:
+      - name: Set up environment proxy  # 如果需要设置代理，请取消注释并填入你的代理信息
+        run: |
+          echo "http_proxy=http://127.0.0.1:7890" >> $GITHUB_ENV
+        #  echo "https_proxy=http://your.proxy.host:your.proxy.port" >> $GITHUB_ENV
+        # 如果不需要代理，可删除或注释上面这段代码
+
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -31,7 +37,7 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      #- name: Ensure latest Flutter SDK
+      #- name: Ensure latest Flutter SDK  # 如果不需要强制升级，可以保留注释
       #  run: flutter upgrade --force
 
       - name: Build APK
