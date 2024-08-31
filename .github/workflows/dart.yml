@@ -1,9 +1,13 @@
+name: Build and Test
 
-name: CI
 on:
   push:
     branches:
-      - master
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:  # 保留手动触发选项
 
 jobs:
   flutter_test:
