@@ -1,89 +1,54 @@
-name: Build and Test
 
+name: CI
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  workflow_dispatch:  # 保留手动触发选项
+      - master
 
 jobs:
-  build:
-    runs-on: macos-latest  # 使用 macOS 构建 iOS 和 Android 应用
-
-    env:
-      FLUTTER_VERSION: '3.7.0'
-
+  flutter_test:
+    name: Run flutter test and analyze
+    runs-on: ubuntu-latest
     steps:
-      # - name: Set up environment proxy  # 如果需要设置代理，请取消注释并填入你的代理信息
-      #   run: |
-      #     echo "http_proxy=http://127.0.0.1:7890" >> $GITHUB_ENV
-      #     echo "https_proxy=http://your.proxy.host:your.proxy.port" >> $GITHUB_ENV
-      # 如果不需要代理，可删除或注释上面这段代码
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
         with:
-          distribution: 'adopt'
-          java-version: '11'
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+          java-version: "12.x"
+      - uses: subosito/flutter-action@v1
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: "stable"
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
 
-      - name: Clean the project
-        run: flutter clean
-
-      - name: Get dependencies
-        run: flutter pub get
-
-      # 确保依赖下载和构建缓存的使用，以加速构建
-      - name: Cache Flutter build
-        uses: actions/cache@v3
+  build_ios:
+    name: Build Flutter (iOS)
+    needs: [flutter_test]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
         with:
-          path: |
-            ~/.pub-cache
-            build
-          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-flutter-
-
-      - name: Build APK
-        run: flutter build apk --release --verbose
-
-      - name: Build iOS App
-        run: flutter build ios --release --no-codesign --verbose
-
-      - name: Archive iOS App
-        run: |
-          xcodebuild -workspace ios/Runner.xcworkspace \
-            -scheme Runner \
-            -sdk iphoneos \
-            -configuration Release \
-            -archivePath ${{ github.workspace }}/Runner.xcarchive \
-            archive
-
-      - name: Export IPA
-        run: |
-          xcodebuild -exportArchive \
-            -archivePath ${{ github.workspace }}/Runner.xcarchive \
-            -exportPath ${{ github.workspace }} \
-            -exportOptionsPlist ios/exportOptions.plist
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v3
+          java-version: "12.x"
+      - uses: subosito/flutter-action@v1
         with:
-          name: app-release.apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          channel: "stable"
+      - run: flutter pub get
+      - run: flutter clean
+      - run: flutter build ios --release --no-codesign
 
-      - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v3
+  build_appbundle:
+    name: Build Flutter (Android)
+    needs: [flutter_test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
         with:
-          name: app-release.ipa
-          path: ${{ github.workspace }}/*.ipa
+          java-version: "12.x"
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: "stable"
+      - run: flutter pub get
+      - run: flutter clean
+      - run: flutter build appbundle
